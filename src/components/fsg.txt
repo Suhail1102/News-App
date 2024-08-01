@@ -1,0 +1,322 @@
+<Route path='/business'><News pageSize={6} country="in" category="health"/></Route>
+<Route path='/entertainment'><News pageSize={6} country="in" category="entertainment"/></Route>
+<Route path='/general'><News pageSize={6} country="in" category="general"/></Route>
+<Route path='/health'><News pageSize={6} country="in" category="health"/></Route>
+<Route path='/science'><News pageSize={6} country="in" category="science"/></Route>
+<Route path='/sports'><News pageSize={6} country="in" category="sports"/></Route>
+<Route path='/technology'><News pageSize={6} country="in" category="technology"/></Route>
+
+
+classBase
+
+Navbar 
+
+import React, { Component } from 'react'
+import { Link } from 'react-router-dom'
+export class Navbar extends Component {
+  render() {
+    return (
+      <>
+        <nav className="navbar navbar-expand-lg  bg-dark navbar-dark">
+          <div className="container-fluid">
+            <Link className="navbar-brand" to="/">{this.props.name}</Link>
+            <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+              <span className="navbar-toggler-icon"></span>
+            </button>
+            <div className="collapse navbar-collapse" id="navbarSupportedContent">
+              <ul className="navbar-nav me-auto mb-2 mb-lg-0">
+                <li className="nav-item">
+                  <Link className="nav-link active" aria-current="page" to="/">Home</Link>
+                </li>
+
+                <li className="nav-item">
+                  <Link className="nav-link" to="/business">Business</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/entertainment">Entertainment</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/general">General</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/health">Health</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/science">Science</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/sports">Sports</Link>
+                </li>
+                <li className="nav-item">
+                  <Link className="nav-link" to="/Technology">technology</Link>
+                </li>
+              </ul>
+
+            </div>
+          </div>
+        </nav>
+      </>
+    )
+  }
+}
+
+export default Navbar
+
+
+App.js
+import React, { Component } from 'react'
+import Navbar from './components/Navbar'
+import News from './components/News'
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import LoadingBar from 'react-top-loading-bar'
+export class App extends Component {
+  pageSize = 10;
+
+  state={
+    progress :0
+  }
+  setProgress=(progress)=>{
+    this.setState({progress: progress})
+  }
+  render() {
+
+
+    // { let body= document.body
+    //   body.style.background="#d7d7d7";}
+    return (
+      <>
+        <BrowserRouter>
+        <LoadingBar
+        color='red' 
+        progress={this.state.progress} 
+        height="5px"
+        />
+          <Navbar name="Navabr" />
+          <Routes>
+            <Route exact path='/' element={<News setProgress= {this.setProgress}  key="general" pageSize={this.pageSize} country="in" category="general" />}></Route>
+            <Route exact path='/business' element={<News setProgress= {this.setProgress}  key="business" pageSize={this.pageSize} country="in" category="business" />}></Route>
+            <Route exact path='/entertainment' element={<News setProgress= {this.setProgress}  key="entertainment" pageSize={this.pageSize} country="in" category="entertainment" />}></Route>
+            <Route exact path='/general' element={<News setProgress= {this.setProgress}  key="general" pageSize={this.pageSize} country="in" category="general" />}></Route>
+            <Route exact path='/health' element={<News setProgress= {this.setProgress}  key="health" pageSize={this.pageSize} country="in" category="health" />}></Route>
+            <Route exact path='/science' element={<News setProgress= {this.setProgress}  key="science" pageSize={this.pageSize} country="in" category="science" />}></Route>
+            <Route exact path='/sports' element={<News setProgress= {this.setProgress}  key="sports" pageSize={this.pageSize} country="in" category="sports" />}></Route>
+            <Route exact path='/technology' element={<News setProgress= {this.setProgress}  key="technology" pageSize={this.pageSize} country="in" category="technology" />}></Route>
+          </Routes>
+        </BrowserRouter>
+      </>
+
+    )
+  }
+}
+
+export default App
+
+News.js
+import React, { Component } from "react";
+import NewsItem from "./NewsItem";
+ import Spinner from './Spinner';
+ import PropTypes from 'prop-types'
+ import InfiniteScroll from "react-infinite-scroll-component";
+
+export class News extends Component {
+  constructor() {
+    super();
+    this.state = {
+      articles: [],
+      page: 1,
+      loading: false,
+      totalResults:0
+    };
+  }
+
+  static defaultProps={
+    country:"in",
+    pageSize: 6,
+    category:'general'
+  }
+
+  static propTypes={
+    country: PropTypes.string,
+    pageSize: PropTypes.number,
+    category: PropTypes.string
+  }
+  async updateNews(){
+    this.props.setProgress(10);
+    const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=8f7f2d47672948ee9414288735342843&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+    this.setState({loading:true})
+    let data = await fetch(url);
+    let parseData = await data.json();
+    this.props.setProgress(50);
+    console.log(parseData);
+    this.setState({
+      articles: parseData.articles,
+      totalResults: parseData.totalResults,
+      loading:false,
+    })
+    this.props.setProgress(100);
+  }
+  async componentDidMount() {
+    this.updateNews();
+    // const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=8f7f2d47672948ee9414288735342843&page=1&pageSize=${this.props.pageSize}`;
+    //    this.setState({loading: true});
+    // let data = await fetch(url);
+    // let parseData = await data.json();
+    // console.log(parseData);
+    // this.setState({
+    //   articles: parseData.articles,
+    //   totalResults: parseData.totalResults,
+    //   loading:false
+    // });
+  }
+  
+  handleNextClick = async () => {
+ 
+    // let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=b3e271d8745a4f41be80907ada405d88&page=${
+    //   this.state.page + 1
+    // }&pageSize=${this.props.pageSize}`;
+    // this.setState({loading: true});
+    // let data = await fetch(url);
+    // let parseData = await data.json();
+    // console.log(parseData);
+    // this.setState({ articles: parseData.articles, page: this.state.page + 1 , loading: false});
+    //    this.setState({
+    // page: this.state.page + 1})
+    // this.updateNews();   
+         
+  };
+
+  handlePrevClick = async () => {
+    // let url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=b3e271d8745a4f41be80907ada405d88&page=${
+    //   this.state.page - 1
+    // }&pageSize=${this.props.pageSize}`;
+    // this.setState({loading: true});
+    // let data = await fetch(url);
+    // let parseData = await data.json();
+    // console.log(parseData);
+    // this.setState({ articles: parseData.articles, page: this.state.page - 1 , loading: false });
+    // this.setState( {page: this.state.page - 1 })
+    // this.updateNews();
+  };
+
+  fetchMoreData = async() => {
+    this.setState({page: this.state.page +1})
+    const url = `https://newsapi.org/v2/top-headlines?country=${this.props.country}&category=${this.props.category}&apiKey=8f7f2d47672948ee9414288735342843&page=${this.state.page}&pageSize=${this.props.pageSize}`;
+    this.setState({loading:true})
+    let data = await fetch(url);
+    let parseData = await data.json();
+    console.log(parseData);
+    this.setState({
+      articles: this.state.articles.concat(parseData.articles),
+      totalResults: parseData.totalResults,
+      loading: false
+    })
+   
+  };
+  
+  render() {
+    return (
+      <>
+        <div className="my-3">
+          <h1 className="text-center" style={{margin:"35px 0px"}}>News App - Top Headlines</h1>
+          {this.state.loading && <Spinner />}
+          <InfiniteScroll
+          dataLength={this.state.articles.length}
+          next={this.fetchMoreData}
+          hasMore={this.state.articles.length !== this.state.totalResults}
+          loader={<Spinner/>}
+        >
+          <div className="container">
+          <div className=" row   ">
+            {this.state.articles.map((element) => {
+              return (
+                <div className=" col-md-4 " key={element.url}>
+                  <div className="my-3 ">
+                  <NewsItem
+                    title={element.title ? element.title : "title"}
+                    description={
+                      element.description ? element.description : " description"
+                    }
+                    imageUrl={element.urlToImage}
+                    newsUrl={element.url}
+                    author={element.author?element.author : "unknown"}
+                    date={element.publishedAt?element.publishedAt :" No time"}
+                  />
+                </div>
+                </div>
+              );
+            })}
+          </div>
+          </div>
+          </InfiniteScroll>
+        </div>
+        {/* <div className="container my-3 d-flex justify-content-between">
+          <button
+            disabled={this.state.page <= 1}
+            type="button"
+            className="btn btn-dark"
+            onClick={this.handlePrevClick}
+          >
+            &laquo; Previous
+          </button>
+          <button
+            disabled={
+              this.state.page + 1 >=
+              Math.ceil(this.state.totalResults / this.props.pageSize)
+            }
+            type="button"
+            className="btn btn-dark"
+            onClick={this.handleNextClick}
+          >
+            Next &raquo;
+          </button>
+        </div> */}
+      </>
+    );
+  }
+}
+
+export default News;
+
+import React, { Component } from 'react'
+
+export class NewsItem extends Component {
+  render() {
+    let {title , description ,imageUrl , newsUrl , author , date}= this.props;
+    return (
+      <>
+      <div className="card " data-aos="fade-up">
+  <img src={imageUrl} className="card-img-top  " alt="..."/>
+  <div className="card-body">
+    <h5 className="card-title">{title}..</h5>
+    <p className="card-text">{description}...</p>
+    <p className="card-text"><small className="text-muted">By {author} on {new Date(date).toGMTString()}</small></p>
+    <a href={newsUrl} target='blank' className="btn  btn-sm btn-dark " alt="1">Read more</a>
+  </div>
+</div>
+      </>
+    )
+  }
+}
+
+export default NewsItem
+
+import React, { Component } from 'react'
+import loading from './loading.gif'
+export class spinner extends Component {
+  render() {
+    return (
+      <>
+     
+       <div className='text-center' >
+       <img src={loading} alt="" style={{ width:"100px", height:"100px"}}/>
+             </div> 
+      </>
+    )
+    
+  }
+}
+
+export default spinner
+
+
+ 
